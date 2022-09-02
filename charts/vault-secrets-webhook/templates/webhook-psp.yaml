@@ -9,12 +9,15 @@ metadata:
   name: {{ template "vault-secrets-webhook.fullname" . }}
   namespace: {{ .Release.Namespace }}
   annotations:
-    seccomp.security.alpha.kubernetes.io/allowedProfileNames: docker/default
-    seccomp.security.alpha.kubernetes.io/defaultProfileName: docker/default
+    seccomp.security.alpha.kubernetes.io/allowedProfileNames: 'docker/default,runtime/default'
+    seccomp.security.alpha.kubernetes.io/defaultProfileName:  'runtime/default'
 spec:
+  hostNetwork: false
   allowPrivilegeEscalation: false
-  allowedCapabilities:
-  - IPC_LOCK
+  hostIPC: false
+  hostPID: false
+  requiredDropCapabilities:
+    - ALL
   fsGroup:
     ranges:
     - max: 65535
@@ -23,6 +26,11 @@ spec:
   readOnlyRootFilesystem: true
   runAsUser:
     rule: MustRunAsNonRoot
+  runAsGroup:
+    rule: MustRunAs
+    ranges:
+      - min: 1
+        max: 65535
   seLinux:
     rule: RunAsAny
   supplementalGroups:
